@@ -29,17 +29,58 @@ MAx_USERS_BS3=200
 ######
 
 class SFC:
-    def __init__(self):
-        self.G= nx.Graph()
-        self.G.add_node(1, color='yellow',res=1)
-        self.G.add_node(2, color='yellow', res=0.5)
-        self.G.add_node(3, color='yellow', res =0.3)
+    #args: list of nodes, list of res, list of connections
+    #example: [1,2,3],[1,2,1],[(1,2),(2,3)],[10,20]
+    def __init__(self, *args):
+        if len(args)<1:
+            self.G= nx.Graph()
+            self.G.add_node(0, color='yellow',res=1)
+            self.G.add_node(1, color='yellow', res=2.5)
+            self.G.add_node(2, color='yellow', res =3)
+            
+            self.G.add_edge(0,1, bw=10)
+            self.G.add_edge(1,2, bw=20)
+        else:
+            self.G=nx.Graph()
+            #add nodes
+            for i in range(len(args[0])):
+                self.G.add_node(args[0][i], color='yellow', res=args[1][i])
+            #add links and bandwidths
+            for i in range(len(args[2])):
+                self.G.add_edge(args[2][i][0],args[2][i][1],bw=args[3])
+    def printSFC(self):
+        strsfc="SFC:"
+        k=self.G.number_of_nodes()
+        i=1
+        for n in self.G.nodes(data=True):
+            strsfc=strsfc+str(n[0])
+            if i<k:
+                strsfc+=","
+            i=i+1
         
-        self.G.add_edge(1,2, bw=10)
-        self.G.add_edge(2,3,bw=20)
-    
+            
+        print(strsfc)
+        
     def get_num_nodes(self):
         return self.G.number_of_nodes()
+    
+    def get_array_vnf_cap(self):
+        list_node_cap=[]
+        for n in self.G.nodes(data=True):
+            #print("res",n[1]['res'])
+            list_node_cap.append(n[1]['res'])
+        return list_node_cap
+    
+    
+    def get_array_link_bw(self):
+        list_link_bws=[]
+        for l in self.G.edges(data=True):
+            #print(l)
+            list_link_bws.append(l[2]['bw'])
+        return list_link_bws
+    
+    def get_num_links(self):
+        return self.G.number_of_edges()
         
 class Topo_SFC:
     def __init__(self):
@@ -110,8 +151,8 @@ class Topo_SFC:
     
         self.pos = nx.spring_layout(self.G)
     
-        output=open('graph.p', "wb" )
-        pickle.dump(self.pos,output)
+        #output=open('graph.p', "wb" )
+        #pickle.dump(self.pos,output)
         try:
             output=open('graph.p', "rb" )
             self.pos=pickle.load(output)
@@ -123,8 +164,25 @@ class Topo_SFC:
         
         #draw_network(G)
     
-    def get_number_nodes(self):
+    def get_array_link_bw(self):
+        list_link_bws=[]
+        for l in self.G.edges(data=True):
+            #print(l[2]['bw'])
+            list_link_bws.append(l[2]['bw'])
+        return list_link_bws
+   
+    def get_array_node_cap(self):
+        list_node_cap=[]
+        for n in self.G.nodes(data=True):
+            #print("res",n[1]['res'])
+            list_node_cap.append(n[1]['res'])
+        return list_node_cap
+    
+    def get_num_nodes(self):
         return self.G.number_of_nodes()
+    
+    def get_num_links(self):
+        return self.G.number_of_edges()
     
     def draw_network(self):    
         
